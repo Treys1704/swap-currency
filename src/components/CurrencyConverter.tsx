@@ -88,7 +88,7 @@ export default function CurrencyConverter() {
                                             <span>{flag}</span>
                                             <span className="flex-1 text-left">{code}</span>
                                             {fromCurrency === code && (
-                                                <Check className="w-4 h-4 text-blue-500" />
+                                                <Check className="w-4 h-4 text-gray-500" />
                                             )}
                                         </button>
                                     ))}
@@ -144,7 +144,7 @@ export default function CurrencyConverter() {
                                             <span>{flag}</span>
                                             <span className="flex-1 text-left">{code}</span>
                                             {toCurrency === code && (
-                                                <Check className="w-4 h-4 text-blue-500" />
+                                                <Check className="w-4 h-4 text-gray-500" />
                                             )}
                                         </button>
                                     ))}
