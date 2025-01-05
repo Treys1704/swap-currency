@@ -10,6 +10,24 @@ const currencies = {
     CHF: { name: 'CHF', flag: '🇨🇭', rate: 0.93 },
 }
 
+const NumberAnimation = ({ value }: { value: string }) => {
+    return (
+        <div className="flex overflow-hidden h-8">
+            {value.split('').map((digit, index) => (
+                <motion.span
+                    key={`${index}-${digit}`}
+                    className="inline-block w-4 text-center text-2xl font-medium"
+                    initial={{ y: 30 }}
+                    animate={{ y: 0 }}
+                    transition={{ duration: 0.1, delay: index * 0.08, type: 'spring', stiffness: 130 }}
+                >
+                    {digit}
+                </motion.span>
+            ))}
+        </div>
+    )
+}
+
 export default function CurrencyConverter() {
     const [amount, setAmount] = useState('10')
     const [fromCurrency, setFromCurrency] = useState('USD')
@@ -18,29 +36,27 @@ export default function CurrencyConverter() {
     const [convertedAmount, setConvertedAmount] = useState('0')
 
     useEffect(() => {
-        convertCurrency(amount, true)
-    }, [fromCurrency, toCurrency])
-
-    const convertCurrency = (value: string, isFrom: boolean) => {
-        const numValue = value.replace(/[^0-9.]/g, '')
         const fromRate = currencies[fromCurrency as keyof typeof currencies].rate
         const toRate = currencies[toCurrency as keyof typeof currencies].rate
+        const converted = ((parseFloat(amount) || 0) * toRate) / fromRate
+        setConvertedAmount(converted.toFixed(2))
+    }, [amount, fromCurrency, toCurrency])
 
+    const handleAmountChange = (value: string, isFrom: boolean) => {
+        const numValue = value.replace(/[^0-9.]/g, '')
         if (isFrom) {
             setAmount(numValue)
+            const fromRate = currencies[fromCurrency as keyof typeof currencies].rate
+            const toRate = currencies[toCurrency as keyof typeof currencies].rate
             const converted = ((parseFloat(numValue) || 0) * toRate) / fromRate
             setConvertedAmount(converted.toFixed(2))
         } else {
             setConvertedAmount(numValue)
+            const fromRate = currencies[fromCurrency as keyof typeof currencies].rate
+            const toRate = currencies[toCurrency as keyof typeof currencies].rate
             const newAmount = ((parseFloat(numValue) || 0) * fromRate) / toRate
             setAmount(newAmount.toFixed(2))
         }
-    }
-
-    const inputAnimation = {
-        initial: { y: 30, opacity: 0 },
-        animate: { y: 0, opacity: 1 },
-        transition: { duration: 0.1, type: 'spring', stiffness: 130 }
     }
 
     return (
@@ -53,14 +69,13 @@ export default function CurrencyConverter() {
                     <div className="relative">
                         <div className="bg-gray-50 rounded-xl p-4">
                             <div className="flex justify-between items-center">
-                                <motion.input
+                                <input
                                     type="text"
                                     inputMode="decimal"
                                     value={amount}
-                                    onChange={(e) => convertCurrency(e.target.value, true)}
+                                    onChange={(e) => handleAmountChange(e.target.value, true)}
                                     className="bg-transparent text-2xl font-medium w-24 focus:outline-none"
                                     placeholder="0"
-                                    {...inputAnimation}
                                 />
                                 <button
                                     onClick={() => setShowDropdown(showDropdown === 'from' ? null : 'from')}
@@ -78,7 +93,7 @@ export default function CurrencyConverter() {
                             </div>
                         </div>
 
-                        <AnimatePresence mode={"wait"}>
+                        <AnimatePresence>
                             {showDropdown === 'from' && (
                                 <motion.div
                                     initial={{ opacity: 0, y: -10 }}
@@ -92,14 +107,14 @@ export default function CurrencyConverter() {
                                             onClick={() => {
                                                 setFromCurrency(code)
                                                 setShowDropdown(null)
-                                                convertCurrency(amount, true)
+                                                handleAmountChange(amount, true)
                                             }}
                                             className="flex items-center gap-2 w-full px-4 py-2 hover:bg-gray-50 first:rounded-t-xl last:rounded-b-xl"
                                         >
                                             <span>{flag}</span>
                                             <span className="flex-1 text-left">{code}</span>
                                             {fromCurrency === code && (
-                                                <Check className="w-4 h-4 text-gray-500" />
+                                                <Check className="w-4 h-4 text-blue-500" />
                                             )}
                                         </button>
                                     ))}
@@ -112,15 +127,8 @@ export default function CurrencyConverter() {
                     <div className="relative">
                         <div className="bg-gray-50 rounded-xl p-4">
                             <div className="flex justify-between items-center">
-                                <motion.input
-                                    type="text"
-                                    inputMode="decimal"
-                                    value={convertedAmount}
-                                    onChange={(e) => convertCurrency(e.target.value, false)}
-                                    className="bg-transparent text-2xl font-medium w-24 focus:outline-none"
-                                    placeholder="0"
-                                    {...inputAnimation}
-                                />
+                                <NumberAnimation value={convertedAmount} />
+
                                 <button
                                     onClick={() => setShowDropdown(showDropdown === 'to' ? null : 'to')}
                                     className="flex items-center gap-2 px-4 py-2 rounded-full bg-white shadow-sm hover:shadow transition-all"
@@ -151,14 +159,14 @@ export default function CurrencyConverter() {
                                             onClick={() => {
                                                 setToCurrency(code)
                                                 setShowDropdown(null)
-                                                convertCurrency(convertedAmount, false)
+                                                handleAmountChange(convertedAmount, false)
                                             }}
                                             className="flex items-center gap-2 w-full px-4 py-2 hover:bg-gray-50 first:rounded-t-xl last:rounded-b-xl"
                                         >
                                             <span>{flag}</span>
                                             <span className="flex-1 text-left">{code}</span>
                                             {toCurrency === code && (
-                                                <Check className="w-4 h-4 text-gray-500" />
+                                                <Check className="w-4 h-4 text-blue-500" />
                                             )}
                                         </button>
                                     ))}
@@ -179,4 +187,3 @@ export default function CurrencyConverter() {
         </div>
     )
 }
-
